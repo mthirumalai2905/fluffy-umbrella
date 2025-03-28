@@ -1,11 +1,20 @@
-import React from 'react';
+import React from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { dummyInterviews } from "@/constants";
 import InterviewCard from "@/components/InterviewCard";
+import {
+  getCurrentUser,
+  getInterviewsByUserId,
+} from "@/lib/actions/auth.action";
 
-export default function Home() {
+export default async function Home() {
+  const user = await getCurrentUser();
+  const userInterviews = await getInterviewsByUserId(user?.id!);
+
+  const hasPastInterviews = userInterviews?.length > 0;
+
   return (
     <>
       <section className="card-cta">
@@ -19,19 +28,29 @@ export default function Home() {
             <Link href="/interview">Start an Interview</Link>
           </Button>
 
-          <Image src="/robot.png" alt="robo-dude" width={400} height={400} className="max-sm:hidden" />
+          <Image
+            src="/robot.png"
+            alt="robo-dude"
+            width={400}
+            height={400}
+            className="max-sm:hidden"
+          />
 
           <section className="flex flex-col gap-6 mt-8">
             <h2>Your Interviews</h2>
 
             <div className="interviews-section">
               <div className="flex flex-wrap gap-4">
-                {dummyInterviews.length > 0 ? (
+                {hasPastInterviews && userInterviews?.length > 0 ? (
+                  userInterviews.map((interview) => (
+                    <InterviewCard {...interview} key={interview.id} />
+                  ))
+                ) : dummyInterviews.length > 0 ? (
                   dummyInterviews.map((interview) => (
                     <InterviewCard key={interview.id} {...interview} />
                   ))
                 ) : (
-                  <p>No interviews available</p>
+                  <p>You haven't taken any interviews yet</p>
                 )}
               </div>
             </div>
